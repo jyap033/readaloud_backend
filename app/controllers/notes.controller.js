@@ -1,6 +1,6 @@
 const db = require("../models");
 const Note = db.notes;
-
+//test
 // Create and Save a new Note
 exports.create = (req, res) => {
     // Validate request
