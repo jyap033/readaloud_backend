@@ -1,3 +1,3 @@
 module.exports = {
-    url: "mongodb+srv://admin-jay:Blackie@999@cluster0.nk2rw.mongodb.net/recipeDB"
+    url: "mongodb+srv://admin:admin@cluster0.c19gq.mongodb.net/myFirstDatabase?retryWrites=true&w=majority"
   };
