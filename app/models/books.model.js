@@ -7,11 +7,11 @@ module.exports = mongoose => {
           bookTitle: String,
           author: String,
           date_added: { type: Date, default: Date.now },
-          chapter: {
+          chapters: [{
             type: mongoose.Schema.Types.ObjectId,
             required: true,
             ref: 'Chapter'
-          }
+          }]
         },
         { timestamps: true }
       )

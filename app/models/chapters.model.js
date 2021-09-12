@@ -5,11 +5,11 @@ module.exports = mongoose => {
         {
           number: String,
           bookID: Number,
-          page: {
+          pages: [{
             type: mongoose.Schema.Types.ObjectId,
             required: true,
             ref: 'Page'
-          }
+          }]
         },
         { timestamps: true }
       )
