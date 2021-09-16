@@ -108,6 +108,8 @@ app.post("/api/upload", upload.single("pdf"), async (req, res, next) => {
       );
       page++;
     });
+  } else {
+    console.log("No file received.");
   }
 
   //TODO: add it into database and assign userID
