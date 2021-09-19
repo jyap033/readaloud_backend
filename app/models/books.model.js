@@ -6,7 +6,6 @@ module.exports = mongoose => {
           userID: String,
           bookTitle: String,
           author: String,
-          date_added: { type: Date, default: Date.now },
           chapters: [{
             type: mongoose.Schema.Types.ObjectId,
             required: true,

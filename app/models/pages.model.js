@@ -5,7 +5,6 @@ module.exports = mongoose => {
         {
           number: Number,
           chapterNumber: Number,
-          chapterBookID: Number,
           body: String,
 
         },

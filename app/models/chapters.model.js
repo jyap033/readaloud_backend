@@ -3,6 +3,7 @@ module.exports = mongoose => {
       "Chapter",
       mongoose.Schema(
         {
+          
           number: String,
           bookID: Number,
           pages: [{

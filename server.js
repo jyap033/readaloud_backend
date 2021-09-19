@@ -3,12 +3,9 @@ const bodyParser = require("body-parser");
 const cors = require("cors");
 const { OAuth2Client } = require("google-auth-library");
 // const client = new OAuth2Client(CLIENT_ID);
-const multer = require("multer");
-const upload = multer({ dest: "uploads/" });
-const path = require("path");
-const fs = require("fs");
-const PDFParser = require("pdf2json");
-let pdfParser = new PDFParser(this, 1);
+
+
+
 
 const app = express();
 require("dotenv").config();
@@ -25,6 +22,8 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 require("./app/routes/notes.routes")(app);
+require("./app/routes/books.routes")(app);
+require("./app/routes/upload.routes")(app);
 
 //Database connection
 const db = require("./app/models");
@@ -84,60 +83,6 @@ async function verify() {
 app.get("/", (req, res) => {
   res.json({ message: "Welcome to jay's application." });
 });
-
-//Placed it in here because not under any particular controller. Can relocated it afterwards if needed.
-app.post("/api/upload", upload.single("pdf"), async (req, res, next) => {
-  var fileName = "";
-
-  try {
-    if (req.file) {
-      fileName = req.file.originalname ?? "test";
-      var filepath = path.join(__dirname, req.file.path);
-      console.log(filepath);
-      var stream = fs.readFileSync(filepath);
-      var extracted_text = await getPDFText(stream);
-      // console.log("PDF Text:", text);
-      //\r\n----------------Page (4) Break----------------\r\n
-      let re = /\r\n----------------Page.*Break----------------\r\n/g;
-      var textArr = extracted_text.split(re);
-      var page = 0;
-      textArr.forEach(function (entry) {
-        console.log(entry);
-        console.log(
-          "\n\n================PageBreak" + page + "==================="
-        );
-        page++;
-      });
-    } else {
-      console.log("req.file == null");
-    }
-  } catch (err) {
-    res
-      .status(503)
-      .json({ message: "File Received", title: fileName, text: textArr });
-  }
-
-  //TODO: add it into database and assign userID
-
-  res
-    .status(201)
-    .json({ message: "File Received", title: fileName, text: textArr });
-});
-
-function getPDFText(data) {
-  try {
-    return new Promise((resolve, reject) => {
-      const pdfParser = new PDFParser(null, 1);
-      pdfParser.on("pdfParser_dataError", reject);
-      pdfParser.on("pdfParser_dataReady", (pdfData) => {
-        resolve(pdfParser.getRawTextContent());
-      });
-      pdfParser.parseBuffer(data);
-    });
-  } catch (e) {
-    console.log(e);
-  }
-}
 
 // set port, listen for requests
 const PORT = process.env.PORT || 8081;
