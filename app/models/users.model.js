@@ -3,9 +3,9 @@ module.exports = mongoose => {
       "User",
       mongoose.Schema(
         {
-          userID: Number,
-          Name: String,
-          Email: String,
+          userID: String,
+          name: String,
+          email: String,
         },
         { timestamps: true }
       )
