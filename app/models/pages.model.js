@@ -1,16 +1,17 @@
-module.exports = mongoose => {
-    const Page = mongoose.model(
-      "Page",
-      mongoose.Schema(
-        {
-          number: Number,
-          chapterNumber: Number,
-          body: String,
+const mongoose = require("mongoose");
 
-        },
-        { timestamps: true }
-      )
-    );
-  
-    return Page;
-  };
+const PageSchema = mongoose.Schema(
+  {
+    page_number: Number,
+    body: String,
+  },
+  { timestamps: true }
+);
+
+module.exports = (mongoose) => {
+  const Page = mongoose.model("Page", PageSchema);
+
+  return Page;
+};
+
+module.exports.Schema = PageSchema;

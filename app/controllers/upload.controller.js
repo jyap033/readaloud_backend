@@ -6,10 +6,12 @@ const path = require("path");
 const mongoose = require("mongoose");
 const db = require("../models");
 const Page = db.pages;
-const Book = db.books;
-const Chapter = db.chapters;
+const BookInfo = db.books_info;
+const BookContent = db.books_content;
+const UserBooks = db.user_books;
 
-exports.upload = async (req, res, next) => {
+exports.upload = async (req, res) => {
+  var userID = req.body.id;
   var fileName = "";
 
   try {
@@ -21,6 +23,7 @@ exports.upload = async (req, res, next) => {
       var extracted_text = await getPDFText(stream);
       let re = /\r\n----------------Page.*Break----------------\r\n/g;
       var textArr = extracted_text.split(re);
+      fs.unlink(filepath, () => {});
     } else {
       console.log("req.file == null");
       res.status(404).json({ errors });
@@ -32,76 +35,73 @@ exports.upload = async (req, res, next) => {
     });
   }
 
-  //TODO: add it into database and assign userID
- 
   var pageArr = [];
-  var chapterArr = [];
   var page_number = 0;
-  var pageIDArr = [];
-
 
   textArr.forEach(function (entry) {
-    console.log(entry);
-    console.log(
-      "\n\n================PageBreak" + page_number + "==================="
-    );
-    const pageID = new mongoose.Types.ObjectId();
-    pageIDArr.push(pageID);
+    // console.log(entry);
+    // console.log(
+    //   "\n\n================PageBreak" + page_number + "==================="
+    // );
+    // const pageID = new mongoose.Types.ObjectId();
+    // pageIDArr.push(pageID);
     const page = new Page({
-      _id: pageID,
       number: page_number,
       chapterNumber: 1,
       // chapterBookID: Number,
       body: entry,
     });
     page_number++;
-    page.save();
-
+    pageArr.push(page);
+    // page.save();
   });
+  console.log("Book Created.");
 
   const bookID = new mongoose.Types.ObjectId();
-  const chapterID = new mongoose.Types.ObjectId();
 
-
-  const chapter = new Chapter({
-    _id: chapterID,
-    number: 1,
+  var bookInfo = new BookInfo({
+    _id: bookID,
     // bookID: bookID,
-    pages: pageIDArr,
-  });
-
-
-
-
-  var audiobook = new Book({
-      _id: bookID,
-    // bookID: bookID,
-    userID: "Test",
+    ownerUserID: userID,
     bookTitle: fileName,
     author: "Test",
-    chapters: [chapterID],
   });
 
-  chapter.save()
-  audiobook
-    .save(
-        audiobook)
+  var bookContent = new BookContent({
+    bookID: bookID,
+    page: pageArr,
+  });
+
+  var userBooks = new UserBooks({
+    user_id: userID,
+    book_id: bookID,
+    currentPage: 1,
+  });
+
+  userBooks.save(userBooks).catch((err) => {
+    res.status(500).send({
+      message: err.message || "Some error occurred while creating userBooks.",
+    });
+  });
+
+  bookContent.save(bookContent).catch((err) => {
+    res.status(500).send({
+      message: err.message || "Some error occurred while creating bookContent.",
+    });
+  });
+
+  bookInfo
+    .save(bookInfo)
     .then((data) => {
       //   res.status(201).json({ title: data, text: textArr });
       res.send(data);
     })
     .catch((err) => {
       res.status(500).send({
-        message:
-          err.message || "Some error occurred while creating the Audiobook.",
+        message: err.message || "Some error occurred while creating bookInfo.",
       });
     });
-
-  //
 };
-
-
-
 
 function getPDFText(data) {
   try {
