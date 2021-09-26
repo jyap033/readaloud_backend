@@ -3,8 +3,12 @@ module.exports = mongoose => {
       "UserBook",
       mongoose.Schema(
         {
-          user_id: Number,
-          book_id: Number,
+          user_id: String,
+          book_id: {
+            type: mongoose.Schema.Types.ObjectId,
+            required: true,
+            ref: 'Book'
+          },
           currentPage: Number,
           bookmarks: [{
             page: Number,
