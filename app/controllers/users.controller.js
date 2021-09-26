@@ -1,9 +1,10 @@
 const db = require("../models");
 const User = db.users;
+const User_Book = db.user_books;
+const Book = db.books;
 
 exports.login = (req, res) => {
-  
-  let token = req.body.id;
+ 
   // Validate request
   if (!req.body.id) {
     res.status(400).send({ message: "Content1 can not be empty!" });
@@ -11,9 +12,9 @@ exports.login = (req, res) => {
   }
 
   var condition = { _id: req.body.id };
-  User.find(condition).then(data => {
-    if (data.length != 0) {
-      res.status(200).send({ "notifications": data[0].notifications});
+  User.findOne(condition).then(data => {
+    if (data) {
+      res.status(200).send({ "notifications": data.notifications});
       User.findByIdAndUpdate(condition, { $set: { notifications: [] }}).catch((err) => {
         console.log(err.message);
       });
@@ -50,22 +51,70 @@ exports.login = (req, res) => {
         err.message || "Some error occurred while retrieving books."
     });
   });
-
-  
-  /*
-  async function verify() {
-    const ticket = await client.verifyIdToken({
-      idToken: token,
-      audience: CLIENT_ID, // Specify the CLIENT_ID of the app that accesses the backend
-    });
-    const payload = ticket.getPayload();
-    const userid = payload["sub"];
-  }
-  verify()
-    .then(() => {
-      res.cookie("session-token", token);
-      res.send("success");
-    })
-    .catch(console.error);
-  */
 };
+
+exports.share = (req, res) => {
+  var condition = {_id:req.body.user_id};
+  User.findOne(condition).then(ownerUserData =>{
+    if (ownerUserData) { 
+      // user exists
+      condition = {_id:req.body.book_id};
+      Book.findOne(condition).then(bookData => {
+        if (bookData.owner_user_id == req.body.user_id){ 
+          // user is owner of book
+          condition = {email:req.body.email};
+          User.findOne(condition).then(shareUserData =>{
+            if (shareUserData) { 
+              // recipient user exists
+              const newUserBook = new User_Book({
+                user_id: shareUserdata._id,
+                book_id: req.body.book_id,
+                currentPage: 0,
+                bookmarks: []
+              });
+              // Save User_Book in the database
+              newUserBook
+                  .save(newUserBook)
+                  .then(() => {
+                    res.status(201).send({
+                      message: "Book was shared successfully!",
+                    });
+                    // update recipient user notifications
+                    var notificationStr = ownerUserData.name + " has shared book \"" + bookData.bookTitle + "\" with you."
+                    shareUserData.notifications.push(notificationStr);
+                    User.findByIdAndUpdate(shareUserData._id, { $set: {notifications: shareUserData.notifications}}).catch((err) => {
+                      console.log(err.message);
+                    });
+                  })
+            }
+            else { // user to share to does not exist
+              res.status(404).send({
+                message:
+                  err.message || "Recipient user not found."
+              });
+            }
+          });
+        }
+        else { // user is not owner of book
+          res.status(401).send({
+            message:
+              err.message || "User is not owner of selected book."
+          });
+        }
+      });
+    }
+    else { // user does not exist
+      res.status(404).send({
+        message:
+          err.message || "User not found."
+      });
+    }
+  })
+  .catch((err) => {
+    console.log(err.message);
+    res.status(500).send({
+      message: "Book sharing failed",
+    });
+  });
+  
+}
