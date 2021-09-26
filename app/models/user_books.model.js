@@ -16,7 +16,8 @@ module.exports = mongoose => {
           }]
         },
         { timestamps: true }
-      )
+      ),
+      "user_books"
     );
   
     return UserBook;

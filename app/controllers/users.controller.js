@@ -1,4 +1,5 @@
 const db = require("../models");
+var mongoose = require('mongoose');
 const User = db.users;
 const User_Book = db.user_books;
 const Book = db.books;
@@ -116,5 +117,67 @@ exports.share = (req, res) => {
       message: "Book sharing failed",
     });
   });
-  
+}
+exports.addBookmark = (req, res) => {
+  condition = {user_id:req.body.user_id , book_id:mongoose.Types.ObjectId(req.body.book_id)};
+  User_Book.findOne(condition).then(bookData => {
+    if (!bookData){
+      res.status(404).send({
+        message: "User_Book not found",
+      });
+      return;
+    }
+    bookData.bookmarks.forEach(bkmark => {
+      if (bkmark.name == req.body.name){
+        res.status(409).send({
+          message: "Bookmark with same name already exists",
+        });
+        return;
+      }
+    });
+    var newBookmark = {
+      "name": req.body.name,
+      "page": req.body.page
+    }
+    bookData.bookmarks.push(newBookmark);
+    User_Book.findByIdAndUpdate(bookData._id, {$set: {bookmarks:bookData.bookmarks}}).catch((err) => {
+      console.log(err.message);
+    });
+    res.status(201).send({
+      message: "Bookmark added successfully!",
+    });
+  })
+  .catch((err) => {
+    console.log(err.message);
+    res.status(500).send({
+      message: "Add bookmark failed",
+    });
+  });
+}
+
+exports.removeBookmark = (req, res) => {
+  condition = {user_id:req.body.user_id, book_id:req.body.book_id};
+  User_Book.findOne(condition).then(bookData => {
+    const indx = bookData.bookmarks.findIndex(v => v.name === req.body.name);
+    if (indx !== 0){
+      // bookmark with matching name found
+      bookData.bookmarks.splice(indx, 1);
+      User_Book.findByIdAndUpdate(bookData._id, {$set: {bookmarks:bookData.bookmarks}}).catch((err) => {
+        console.log(err.message);
+      });
+      res.status(200).send({
+        message: "Bookmark with name " + req.body.name + " removed",
+      });
+      return;
+    }
+    res.status(404).send({
+      message: "Bookmark with name " + req.body.name + " not found",
+    });
+  })
+  .catch((err) => {
+    console.log(err.message);
+    res.status(500).send({
+      message: "Remove bookmark failed",
+    });
+  });
 }
