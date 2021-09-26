@@ -3,9 +3,13 @@ module.exports = mongoose => {
       "UserBook",
       mongoose.Schema(
         {
-          userID: Number,
-          bookID: Number,
+          user_id: Number,
+          book_id: Number,
           currentPage: Number,
+          bookmarks: [{
+            page: Number,
+            name: String
+          }]
         },
         { timestamps: true }
       )

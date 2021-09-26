@@ -3,9 +3,10 @@ module.exports = mongoose => {
       "User",
       mongoose.Schema(
         {
-          userID: String,
+          _id: String,
           name: String,
           email: String,
+          notifications: [String]
         },
         { timestamps: true }
       )
