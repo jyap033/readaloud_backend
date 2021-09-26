@@ -11,7 +11,7 @@ const BookContent = db.books_content;
 const UserBooks = db.user_books;
 
 exports.upload = async (req, res) => {
-  var userID = req.body.id;
+  const userID = req.body.id;
   var fileName = "";
 
   try {

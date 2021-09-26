@@ -3,7 +3,7 @@ module.exports = (mongoose) => {
     "BookInfo",
     mongoose.Schema(
       {
-        ownerUserID: Number,
+        ownerUserID: String,
         bookTitle: String,
         author: String,
         // page: [Page]

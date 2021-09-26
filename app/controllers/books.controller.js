@@ -1,95 +1,136 @@
 const db = require("../models");
-const Book = db.books;
+const BookInfo = db.books_info;
+const BookContent = db.books_content;
+const UserBooks = db.user_books;
 //test
 // Create and Save a new Book
-exports.create = (req, res) => {
-  // Validate request
-  if (!req.body.title) {
-    res.status(400).send({ message: "Content1 can not be empty!" });
-    return;
-  }
+// exports.create = (req, res) => {
+//   // Validate request
+//   if (!req.body.title) {
+//     res.status(400).send({ message: "Content1 can not be empty!" });
+//     return;
+//   }
 
-  // Create a Book
-  const books = new Book({
-    title: req.body.title,
-    imageURL: req.body.imageURL,
-    ingredient: req.body.ingredient,
-    instruction: req.body.instruction,
-    amount: req.body.amount,
-    ingredientList: req.body.ingredientList,
-    instructionList: req.body.instructionList,
-  });
+//   // Save Book in the database
+//   books
+//     .save(books)
+//     .then((data) => {
+//       res.send(data);
+//     })
+//     .catch((err) => {
+//       res.status(500).send({
+//         message: err.message || "Some error occurred while creating the Book.",
+//       });
+//     });
+// };
 
-  // Save Book in the database
-  books
-    .save(books)
-    .then((data) => {
-      res.send(data);
-    })
-    .catch((err) => {
-      res.status(500).send({
-        message: err.message || "Some error occurred while creating the Book.",
-      });
-    });
-};
-
-// Retrieve all Book from the database.
-exports.getAllTitles = (req, res) => {
+// Retrieve all BookTitles(Infos) owned by user from the database.
+exports.getAllTitles = async (req, res) => {
+  var allbooks
+  var sharedBooks = [];
+  var ownedBooks = [];
   // const token = req.token;
   // const userID = token["sub"];
-  const userID = "Test";
-
+  const userID = req.query.id;
+  const type = req.query.type;
+  console.log(userID);
   // var condition = title ? { title: { $regex: new RegExp(title), $options: "i" } } : {};
-  var condition = { userID: userID };
+  var condition = { user_id: userID };
 
-  Book.find(condition).then(data => {
-    res.send(data);
-  })
-  .catch(err => {
-    console.error(err);
-    res.status(500).send({
-      message:
-        err.message || "Some error occurred while retrieving books."
+  await UserBooks.find(condition)
+    .then((userbooks) => {
+
+
+      var bar = new Promise(async (resolve) => {
+        // userbooks.forEach((userbook) => {
+        //   condition = { _id: userbook.book_id };
+        //   BookInfo.find(condition).then((bookInfo) => {
+        //     if (bookInfo.ownerUserID == userbook.userID){
+        //       ownedBooks.push(bookInfo);
+        //       console.log('Owned')
+        //     }else{
+        //       sharedBooks.push(bookInfo);
+        //       console.log('Shared')
+        //     }
+        //   });
+        //   resolve()
+        // });
+        
+      for  (const userbook of userbooks) {
+        condition = { _id: userbook.book_id };
+        await BookInfo.find(condition).then((bookInfo) => {
+          if (bookInfo.ownerUserID == userbook.userID){
+            ownedBooks.push(bookInfo);
+            console.log('Owned')
+          }else{
+            sharedBooks.push(bookInfo);
+            console.log('Shared')
+          }
+        });
+      }resolve()
+
     });
-  });
     
+    bar.then(() => {
+      // res.send(allbooks)
+      if (!type){
+        res.send(userbooks);
+      }
+      else if (type=="owned"){
+        console.log('send Owned')
 
-      // prints "The author is Ian Fleming"
- 
+        res.send(ownedBooks)
+      }else if (type=="shared"){
+        res.send(sharedBooks)
+        console.log('send Shared')
+      }else{
+        //bad request
+        res.status(400).send({
+          message: err.message || "Invalid type",
+        });
+      } 
+    });
+  
+    })
+    .catch((err) => {
+      console.error(err);
+      res.status(500).send({
+        message: err.message || "Some error occurred while retrieving books.",
+      });
+    });
+
+  // BookInfo.find(condition).then(data => {
+  //   res.send(data);
+  // });
+
+  // prints "The author is Ian Fleming"
 };
 
 exports.getAllBooks = (req, res) => {
   // const token = req.token;
   // const userID = token["sub"];
-  const userID = "Test";
-
+  const id = req.params.id;
   // var condition = title ? { title: { $regex: new RegExp(title), $options: "i" } } : {};
-  var condition = { userID: userID };
+  var condition = { _id: id };
 
-  Book.find(condition)
+  BookInfo.find(condition)
     .populate({
       path: "chapters",
-      // Get friends of friends - populate the 'friends' array for every friend
+
       populate: { path: "pages" },
     })
     .exec(function (err, books) {
       if (err) return handleError(err);
       books.forEach((entry) => {
         console.log("entry:  %s", entry);
-        entry.chapters[0].pages.forEach((page) => {console.log("page: %s",page);});
+        entry.chapters[0].pages.forEach((page) => {
+          console.log("page: %s", page);
+        });
       });
       console.log("Result:  %s", books);
       res.send(books);
-
-      // prints "The author is Ian Fleming"
     });
 };
-
-// .catch((err) => {
-//   res.status(500).send({
-//     message: err.message || "Some error occurred while retrieving books.",
-//   });
-// });
 
 // Find a single Book with an id
 exports.findOne = (req, res) => {
