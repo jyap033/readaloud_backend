@@ -36,7 +36,7 @@ exports.upload = async (req, res) => {
   }
 
   var pageArr = [];
-  var page_number = 0;
+  var page_number = 1;
 
   textArr.forEach(function (entry) {
     // console.log(entry);
@@ -46,7 +46,7 @@ exports.upload = async (req, res) => {
     // const pageID = new mongoose.Types.ObjectId();
     // pageIDArr.push(pageID);
     const page = new Page({
-      number: page_number,
+      page_number: page_number,
       chapterNumber: 1,
       // chapterBookID: Number,
       body: entry,

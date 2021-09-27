@@ -2,38 +2,16 @@ const db = require("../models");
 const BookInfo = db.books_info;
 const BookContent = db.books_content;
 const UserBooks = db.user_books;
-//test
-// Create and Save a new Book
-// exports.create = (req, res) => {
-//   // Validate request
-//   if (!req.body.title) {
-//     res.status(400).send({ message: "Content1 can not be empty!" });
-//     return;
-//   }
-
-//   // Save Book in the database
-//   books
-//     .save(books)
-//     .then((data) => {
-//       res.send(data);
-//     })
-//     .catch((err) => {
-//       res.status(500).send({
-//         message: err.message || "Some error occurred while creating the Book.",
-//       });
-//     });
-// };
 
 // Retrieve all BookTitles(Infos) owned by user from the database.
 exports.getAllTitles = async (req, res) => {
-  var allbooks
   var sharedBooks = [];
   var ownedBooks = [];
   // const token = req.token;
   // const userID = token["sub"];
-  const userID = req.query.id;
+  const userID = req.query.userid;
   const type = req.query.type;
-  console.log(userID);
+  console.log("userID:  %s",userID);
   // var condition = title ? { title: { $regex: new RegExp(title), $options: "i" } } : {};
   var condition = { user_id: userID };
 
@@ -42,19 +20,6 @@ exports.getAllTitles = async (req, res) => {
 
 
       var bar = new Promise(async (resolve) => {
-        // userbooks.forEach((userbook) => {
-        //   condition = { _id: userbook.book_id };
-        //   BookInfo.find(condition).then((bookInfo) => {
-        //     if (bookInfo.ownerUserID == userbook.userID){
-        //       ownedBooks.push(bookInfo);
-        //       console.log('Owned')
-        //     }else{
-        //       sharedBooks.push(bookInfo);
-        //       console.log('Shared')
-        //     }
-        //   });
-        //   resolve()
-        // });
         
       for  (const userbook of userbooks) {
         condition = { _id: userbook.book_id };
@@ -99,44 +64,16 @@ exports.getAllTitles = async (req, res) => {
       });
     });
 
-  // BookInfo.find(condition).then(data => {
-  //   res.send(data);
-  // });
-
-  // prints "The author is Ian Fleming"
 };
 
-exports.getAllBooks = (req, res) => {
-  // const token = req.token;
-  // const userID = token["sub"];
-  const id = req.params.id;
-  // var condition = title ? { title: { $regex: new RegExp(title), $options: "i" } } : {};
-  var condition = { _id: id };
-
-  BookInfo.find(condition)
-    .populate({
-      path: "chapters",
-
-      populate: { path: "pages" },
-    })
-    .exec(function (err, books) {
-      if (err) return handleError(err);
-      books.forEach((entry) => {
-        console.log("entry:  %s", entry);
-        entry.chapters[0].pages.forEach((page) => {
-          console.log("page: %s", page);
-        });
-      });
-      console.log("Result:  %s", books);
-      res.send(books);
-    });
-};
 
 // Find a single Book with an id
 exports.findOne = (req, res) => {
   const id = req.params.id;
+  console.log(id)
+  var condition = { bookID: id };
 
-  Book.findById(id)
+  BookContent.find(condition)
     .then((data) => {
       if (!data)
         res.status(404).send({ message: "Not found Book with id " + id });
@@ -147,65 +84,174 @@ exports.findOne = (req, res) => {
     });
 };
 
-// Update a Book by the id in the request
-exports.update = (req, res) => {
-  if (!req.body) {
-    return res.status(400).send({
-      message: "Data to update can not be empty!",
-    });
-  }
 
-  const id = req.params.id;
+exports.getProgress = (req, res) => {
+  const bookID = req.params.id;
+  const userID = req.query.userid;
 
-  Book.findByIdAndUpdate(id, req.body)
+  console.log(bookID);
+  console.log(userID);
+  var condition = { book_id: bookID , user_id :userID};
+
+  UserBooks.findOne(condition)
     .then((data) => {
-      if (!data) {
-        res.status(404).send({
-          message: `Cannot update Book with id=${id}. Maybe Book was not found!`,
-        });
-      } else res.send({ message: "Book was updated successfully." });
+      if (!data)
+        res.status(404).send({ message: "Progress Not found"})
+      else res.send(data);
     })
     .catch((err) => {
-      res.status(500).send({
-        message: "Error updating Notes with id=" + id,
-      });
+      res.status(500).send({ message: "Error retrieving Progress"});
     });
 };
+
+
+exports.updateProgress = (req, res) => {
+  const bookID = req.params.id;
+  const userID = req.query.userid;
+  const newPage = req.body.current_page;
+  console.log(newPage);
+  var condition = { book_id: bookID , user_id :userID};
+
+  // MyModel.updateMany({}, { $set: { name: 'foo' } });
+
+  UserBooks.updateOne(condition, { $set: { currentPage: newPage } })
+    .then((data) => {
+      if (!data)
+        res.status(404).send({ message: "UserBooks Not found"})
+      else res.send(data);
+    })
+    .catch((err) => {
+      res.status(500).send({ message: "Error updating Progress"});
+    });
+};
+
 
 // Delete a Book with the specified id in the request
 exports.delete = (req, res) => {
   const id = req.params.id;
+ 
 
-  Book.findByIdAndRemove(id)
-    .then((data) => {
-      if (!data) {
-        res.status(404).send({
-          message: `Cannot delete Book with id=${id}. Maybe Book was not found!`,
-        });
-      } else {
-        res.send({
-          message: "Book was deleted successfully!",
-        });
-      }
-    })
-    .catch((err) => {
-      res.status(500).send({
-        message: "Could not delete Book with id=" + id,
+  var condition = { bookID: id };
+  BookContent.deleteOne(condition).then((data) => {
+    if (!data) {
+      res.status(404).send({
+        message: `Cannot delete BookContent with id=${id}. Maybe BookContent was not found!`,
       });
-    });
+    }
+  })
+
+  condition = { _id: id };
+  BookInfo.deleteOne(condition).then((data) => {
+    if (!data) {
+      res.status(404).send({
+        message: `Cannot delete BookInfo with id=${id}. Maybe BookInfo was not found!`,
+      });
+    }
+  })
+
+  condition = { book_id: id };
+  UserBooks.deleteMany(condition).then((data) => {
+    if (!data) {
+      res.status(404).send({
+        message: `Cannot delete BookInfo with id=${id}. Maybe BookInfo was not found!`,
+      });
+    } else {
+      res.send({
+        message: "BookContent, BookInfo, and UserBook of the Audiobook was deleted successfully!",
+      });
+    }
+  })
 };
+
+
+
+//test
+// Create and Save a new Book
+// exports.create = (req, res) => {
+//   // Validate request
+//   if (!req.body.title) {
+//     res.status(400).send({ message: "Content1 can not be empty!" });
+//     return;
+//   }
+
+//   // Save Book in the database
+//   books
+//     .save(books)
+//     .then((data) => {
+//       res.send(data);
+//     })
+//     .catch((err) => {
+//       res.status(500).send({
+//         message: err.message || "Some error occurred while creating the Book.",
+//       });
+//     });
+// };
+
+
+// exports.getAllBooks = (req, res) => {
+//   // const token = req.token;
+//   // const userID = token["sub"];
+//   const id = req.params.id;
+//   // var condition = title ? { title: { $regex: new RegExp(title), $options: "i" } } : {};
+//   var condition = { _id: id };
+
+//   BookInfo.find(condition)
+//     .populate({
+//       path: "chapters",
+
+//       populate: { path: "pages" },
+//     })
+//     .exec(function (err, books) {
+//       if (err) return handleError(err);
+//       books.forEach((entry) => {
+//         console.log("entry:  %s", entry);
+//         entry.chapters[0].pages.forEach((page) => {
+//           console.log("page: %s", page);
+//         });
+//       });
+//       console.log("Result:  %s", books);
+//       res.send(books);
+//     });
+// };
+
+
+// // Update a Book by the id in the request
+// exports.update = (req, res) => {
+//   if (!req.body) {
+//     return res.status(400).send({
+//       message: "Data to update can not be empty!",
+//     });
+//   }
+
+//   const id = req.params.id;
+
+//   Book.findByIdAndUpdate(id, req.body)
+//     .then((data) => {
+//       if (!data) {
+//         res.status(404).send({
+//           message: `Cannot update Book with id=${id}. Maybe Book was not found!`,
+//         });
+//       } else res.send({ message: "Book was updated successfully." });
+//     })
+//     .catch((err) => {
+//       res.status(500).send({
+//         message: "Error updating Notes with id=" + id,
+//       });
+//     });
+// };
+
 
 // Delete all Book from the database.
-exports.deleteAll = (req, res) => {
-  Book.deleteMany({})
-    .then((data) => {
-      res.send({
-        message: `${data.deletedCount} Notes were deleted successfully!`,
-      });
-    })
-    .catch((err) => {
-      res.status(500).send({
-        message: err.message || "Some error occurred while removing all Notes.",
-      });
-    });
-};
+// exports.deleteAll = (req, res) => {
+//   Book.deleteMany({})
+//     .then((data) => {
+//       res.send({
+//         message: `${data.deletedCount} Notes were deleted successfully!`,
+//       });
+//     })
+//     .catch((err) => {
+//       res.status(500).send({
+//         message: err.message || "Some error occurred while removing all Notes.",
+//       });
+//     });
+// };
