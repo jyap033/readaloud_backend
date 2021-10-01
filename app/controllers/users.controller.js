@@ -2,7 +2,7 @@ const db = require("../models");
 var mongoose = require('mongoose');
 const User = db.users;
 const User_Book = db.user_books;
-const Book = db.books;
+const Book = db.books_info;
 
 exports.login = (req, res) => {
  
@@ -61,37 +61,50 @@ exports.share = (req, res) => {
       // user exists
       condition = {_id:req.body.book_id};
       Book.findOne(condition).then(bookData => {
-        if (bookData.owner_user_id == req.body.user_id){ 
+        if (bookData.ownerUserID == req.body.user_id){ 
           // user is owner of book
           condition = {email:req.body.email};
           User.findOne(condition).then(shareUserData =>{
             if (shareUserData) { 
               // recipient user exists
-              const newUserBook = new User_Book({
-                user_id: shareUserdata._id,
-                book_id: req.body.book_id,
-                currentPage: 0,
-                bookmarks: []
+              condition = {user_id:shareUserData._id, book_id:bookData._id};
+              User_Book.findOne(condition).then(existsCheck => {
+                if (!existsCheck){
+                  // book has not been shared previously
+                    const newUserBook = new User_Book({
+                      user_id: shareUserData._id,
+                      book_id: req.body.book_id,
+                      currentPage: 0,
+                      bookmarks: []
+                    });
+                    // Save User_Book in the database
+                    newUserBook
+                        .save(newUserBook)
+                        .then(() => {
+                          res.status(201).send({
+                            message: "Book was shared successfully!",
+                          });
+                          // update recipient user notifications
+                          var notificationStr = ownerUserData.name + " has shared book \"" + bookData.bookTitle + "\" with you.";
+                          shareUserData.notifications.push(notificationStr);
+                          User.findByIdAndUpdate(shareUserData._id, { $set: {notifications: shareUserData.notifications}}).catch((err) => {
+                            console.log(err.message);
+                          });
+                        })
+                }
+                else {
+                  res.status(404).send({
+                    message:
+                      "Book already shared with recipient user"
+                  });
+                }
               });
-              // Save User_Book in the database
-              newUserBook
-                  .save(newUserBook)
-                  .then(() => {
-                    res.status(201).send({
-                      message: "Book was shared successfully!",
-                    });
-                    // update recipient user notifications
-                    var notificationStr = ownerUserData.name + " has shared book \"" + bookData.bookTitle + "\" with you."
-                    shareUserData.notifications.push(notificationStr);
-                    User.findByIdAndUpdate(shareUserData._id, { $set: {notifications: shareUserData.notifications}}).catch((err) => {
-                      console.log(err.message);
-                    });
-                  })
+              
             }
             else { // user to share to does not exist
               res.status(404).send({
                 message:
-                  err.message || "Recipient user not found."
+                  "Recipient user not found."
               });
             }
           });
@@ -99,7 +112,7 @@ exports.share = (req, res) => {
         else { // user is not owner of book
           res.status(401).send({
             message:
-              err.message || "User is not owner of selected book."
+              "User is not owner of selected book."
           });
         }
       });
@@ -107,7 +120,7 @@ exports.share = (req, res) => {
     else { // user does not exist
       res.status(404).send({
         message:
-          err.message || "User not found."
+          "User not found."
       });
     }
   })
