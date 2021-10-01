@@ -127,14 +127,14 @@ exports.addBookmark = (req, res) => {
       });
       return;
     }
-    bookData.bookmarks.forEach(bkmark => {
+    /*bookData.bookmarks.forEach(bkmark => {
       if (bkmark.name == req.body.name){
         res.status(409).send({
           message: "Bookmark with same name already exists",
         });
         return;
       }
-    });
+    });*/
     var newBookmark = {
       "name": req.body.name,
       "page": req.body.page
@@ -158,20 +158,21 @@ exports.addBookmark = (req, res) => {
 exports.removeBookmark = (req, res) => {
   condition = {user_id:req.body.user_id, book_id:req.body.book_id};
   User_Book.findOne(condition).then(bookData => {
-    const indx = bookData.bookmarks.findIndex(v => {v.name === req.body.name});
-    if (indx !== 0){
+    const indx = bookData.bookmarks.findIndex(v => v._id.toString()===req.body.bookmark_id);
+    console.log(indx);
+    if (indx != -1){
       // bookmark with matching name found
       bookData.bookmarks.splice(indx, 1);
       User_Book.findByIdAndUpdate(bookData._id, {$set: {bookmarks:bookData.bookmarks}}).catch((err) => {
         console.log(err.message);
       });
       res.status(200).send({
-        message: "Bookmark with name " + req.body.name + " removed",
+        message: "Bookmark successfully removed",
       });
       return;
     }
     res.status(404).send({
-      message: "Bookmark with name " + req.body.name + " not found",
+      message: "Bookmark not found",
     });
   })
   .catch((err) => {
