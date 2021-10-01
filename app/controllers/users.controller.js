@@ -158,7 +158,7 @@ exports.addBookmark = (req, res) => {
 exports.removeBookmark = (req, res) => {
   condition = {user_id:req.body.user_id, book_id:req.body.book_id};
   User_Book.findOne(condition).then(bookData => {
-    const indx = bookData.bookmarks.findIndex(v => v.name === req.body.name);
+    const indx = bookData.bookmarks.findIndex(v => {v.name === req.body.name});
     if (indx !== 0){
       // bookmark with matching name found
       bookData.bookmarks.splice(indx, 1);
