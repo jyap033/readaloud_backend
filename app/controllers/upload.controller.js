@@ -45,6 +45,7 @@ exports.upload = async (req, res) => {
     // );
     // const pageID = new mongoose.Types.ObjectId();
     // pageIDArr.push(pageID);
+    entry = entry.replace(/\r\n/g, " ");
     const page = new Page({
       page_number: page_number,
       chapterNumber: 1,
