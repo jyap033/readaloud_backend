@@ -11,7 +11,7 @@ exports.getAllTitles = async (req, res) => {
   // const userID = token["sub"];
   const userID = req.query.userid;
   const type = req.query.type;
-  console.log("userID:  %s",userID);
+  console.log("userID:  %s", userID);
   // var condition = title ? { title: { $regex: new RegExp(title), $options: "i" } } : {};
   var condition = { user_id: userID };
 
@@ -20,42 +20,42 @@ exports.getAllTitles = async (req, res) => {
 
 
       var bar = new Promise(async (resolve) => {
-        
-      for  (const userbook of userbooks) {
-        condition = { _id: userbook.book_id };
-        await BookInfo.find(condition).then((bookInfo) => {
-          if (bookInfo.ownerUserID == userbook.userID){
-            ownedBooks.push(bookInfo);
-            console.log('Owned')
-          }else{
-            sharedBooks.push(bookInfo);
-            console.log('Shared')
-          }
-        });
-      }resolve()
 
-    });
-    
-    bar.then(() => {
-      // res.send(allbooks)
-      if (!type){
-        res.send(userbooks);
-      }
-      else if (type=="owned"){
-        console.log('send Owned')
+        for (const userbook of userbooks) {
+          condition = { _id: userbook.book_id };
+          await BookInfo.find(condition).then((bookInfo) => {
+            if (bookInfo.ownerUserID == userbook.userID) {
+              ownedBooks.push(bookInfo);
+              console.log('Owned')
+            } else {
+              sharedBooks.push(bookInfo);
+              console.log('Shared')
+            }
+          });
+        } resolve()
 
-        res.send(ownedBooks)
-      }else if (type=="shared"){
-        res.send(sharedBooks)
-        console.log('send Shared')
-      }else{
-        //bad request
-        res.status(400).send({
-          message: err.message || "Invalid type",
-        });
-      } 
-    });
-  
+      });
+
+      bar.then(() => {
+        // res.send(allbooks)
+        if (!type) {
+          res.send(userbooks);
+        }
+        else if (type == "owned") {
+          console.log('send Owned')
+
+          res.send(ownedBooks)
+        } else if (type == "shared") {
+          res.send(sharedBooks)
+          console.log('send Shared')
+        } else {
+          //bad request
+          res.status(400).send({
+            message: err.message || "Invalid type",
+          });
+        }
+      });
+
     })
     .catch((err) => {
       console.error(err);
@@ -91,16 +91,16 @@ exports.getProgress = (req, res) => {
 
   console.log(bookID);
   console.log(userID);
-  var condition = { book_id: bookID , user_id :userID};
+  var condition = { book_id: bookID, user_id: userID };
 
   UserBooks.findOne(condition)
     .then((data) => {
       if (!data)
-        res.status(404).send({ message: "Progress Not found"})
+        res.status(404).send({ message: "Progress Not found" })
       else res.send(data);
     })
     .catch((err) => {
-      res.status(500).send({ message: "Error retrieving Progress"});
+      res.status(500).send({ message: "Error retrieving Progress" });
     });
 };
 
@@ -110,18 +110,19 @@ exports.updateProgress = (req, res) => {
   const userID = req.query.userid;
   const newPage = req.body.current_page;
   console.log(newPage);
-  var condition = { book_id: bookID , user_id :userID};
+  var condition = { book_id: bookID, user_id: userID };
 
   // MyModel.updateMany({}, { $set: { name: 'foo' } });
 
   UserBooks.updateOne(condition, { $set: { currentPage: newPage } })
     .then((data) => {
       if (!data)
-        res.status(404).send({ message: "UserBooks Not found"})
+        res.status(404).send({ message: "UserBooks Not found" })
       else res.send(data);
     })
     .catch((err) => {
-      res.status(500).send({ message: "Error updating Progress"});
+      res.status(500).send({ message: "Error updating Progress" });
+      console.log("DEBUG LOG: UPDATE PROGRESS", data);
     });
 };
 
@@ -129,7 +130,7 @@ exports.updateProgress = (req, res) => {
 // Delete a Book with the specified id in the request
 exports.delete = (req, res) => {
   const id = req.params.id;
- 
+
 
   var condition = { bookID: id };
   BookContent.deleteOne(condition).then((data) => {
@@ -156,7 +157,7 @@ exports.delete = (req, res) => {
         message: `Cannot delete BookInfo with id=${id}. Maybe BookInfo was not found!`,
       });
     } else {
-      res.send({
+      res.status.send({
         message: "BookContent, BookInfo, and UserBook of the Audiobook was deleted successfully!",
       });
     }
