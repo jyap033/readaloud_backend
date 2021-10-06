@@ -84,6 +84,24 @@ exports.findOne = (req, res) => {
     });
 };
 
+exports.updateName = (req, res) => {
+  var condition = { user_id: req.body.user_id, book_id: req.params.id};
+  UserBooks.find(condition).then((data) => {
+    if (data) {
+      condition = {_id:data[0]._id}
+      UserBooks.findByIdAndUpdate(condition, { $set: { book_title: req.body.newBookTitle }})
+      .then((data) => {
+        res.status(200).send({ message: "Name changed sucessfully"});
+      });
+    }
+    else {
+      res.status(500).send({ message: "Error retrieving Book with id=" + req.params.id });
+    }
+  })
+  .catch((err) => {
+    res.status(500).send({ message: "Error retrieving Book with id=" + req.params.id });
+  });
+};
 
 exports.getProgress = (req, res) => {
   const bookID = req.params.id;

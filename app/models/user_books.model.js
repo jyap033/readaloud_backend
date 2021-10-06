@@ -4,6 +4,7 @@ module.exports = mongoose => {
       mongoose.Schema(
         {
           user_id: String,
+          book_title: String,
           book_id: {
             type: mongoose.Schema.Types.ObjectId,
             required: true,

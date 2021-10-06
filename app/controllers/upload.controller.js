@@ -13,10 +13,12 @@ const UserBooks = db.user_books;
 exports.upload = async (req, res) => {
   const userID = req.body.id;
   var fileName = "";
+  var bookTitle = "";
 
   try {
     if (req.file) {
       fileName = req.file.originalname ?? "test";
+      bookTitle = req.body.bookTitle ?? fileName;
       var filepath = path.join(path.join(__dirname, "../../"), req.file.path);
       console.log(filepath);
       var stream = fs.readFileSync(filepath);
@@ -64,7 +66,7 @@ exports.upload = async (req, res) => {
     _id: bookID,
     // bookID: bookID,
     ownerUserID: userID,
-    bookTitle: fileName,
+    pdfName: fileName,
     author: "Test",
   });
 
@@ -76,6 +78,7 @@ exports.upload = async (req, res) => {
   var userBooks = new UserBooks({
     user_id: userID,
     book_id: bookID,
+    book_title: bookTitle,
     currentPage: 1,
   });
 

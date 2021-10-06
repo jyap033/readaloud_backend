@@ -14,6 +14,8 @@ module.exports = app => {
   
     router.get("/:id", books.findOne);
 
+    router.put("/:id", books.updateName);
+
     router.get("/:id/progress", books.getProgress);
 
     router.put("/:id/progress", books.updateProgress);

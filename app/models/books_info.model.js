@@ -4,7 +4,7 @@ module.exports = (mongoose) => {
     mongoose.Schema(
       {
         ownerUserID: String,
-        bookTitle: String,
+        pdfName: String,
         author: String,
         // page: [Page]
       },
