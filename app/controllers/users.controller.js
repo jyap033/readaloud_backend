@@ -157,7 +157,7 @@ exports.addBookmark = (req, res) => {
       console.log(err.message);
     });
     res.status(201).send({
-      message: "Bookmark added successfully!",
+      bookmarks: bookData.bookmarks
     });
   })
   .catch((err) => {
@@ -180,7 +180,7 @@ exports.removeBookmark = (req, res) => {
         console.log(err.message);
       });
       res.status(200).send({
-        message: "Bookmark successfully removed",
+        bookmarks: bookData.bookmarks
       });
       return;
     }
