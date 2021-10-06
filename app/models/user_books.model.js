@@ -11,6 +11,7 @@ module.exports = mongoose => {
             ref: 'Book'
           },
           currentPage: Number,
+          currentSentence: Number,
           bookmarks: [{
             page: Number,
             name: String

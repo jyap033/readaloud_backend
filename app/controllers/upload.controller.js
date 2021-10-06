@@ -80,6 +80,7 @@ exports.upload = async (req, res) => {
     book_id: bookID,
     book_title: bookTitle,
     currentPage: 1,
+    currentSentence: 1,
   });
 
   userBooks.save(userBooks).catch((err) => {

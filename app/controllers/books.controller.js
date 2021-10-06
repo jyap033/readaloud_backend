@@ -127,12 +127,13 @@ exports.updateProgress = (req, res) => {
   const bookID = req.params.id;
   const userID = req.query.userid;
   const newPage = req.body.current_page;
+  const newSentence = req.body.current_sentence;
   console.log(newPage);
   var condition = { book_id: bookID, user_id: userID };
 
   // MyModel.updateMany({}, { $set: { name: 'foo' } });
 
-  UserBooks.updateOne(condition, { $set: { currentPage: newPage } })
+  UserBooks.updateOne(condition, { $set: { currentPage: newPage, currentSentence: newSentence } })
     .then((data) => {
       console.log("DEBUG LOG: UPDATE PROGRESS", data);
       if (!data)
