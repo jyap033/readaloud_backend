@@ -176,7 +176,7 @@ exports.delete = (req, res) => {
         message: `Cannot delete BookInfo with id=${id}. Maybe BookInfo was not found!`,
       });
     } else {
-      res.status.send({
+      res.send({
         message: "BookContent, BookInfo, and UserBook of the Audiobook was deleted successfully!",
       });
     }
