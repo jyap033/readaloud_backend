@@ -74,7 +74,9 @@ exports.share = (req, res) => {
                     const newUserBook = new User_Book({
                       user_id: shareUserData._id,
                       book_id: req.body.book_id,
-                      currentPage: 0,
+                      currentPage: 1,
+                      currentSentence: 1,
+                      book_title: bookData.pdfName,
                       bookmarks: []
                     });
                     // Save User_Book in the database
@@ -85,7 +87,7 @@ exports.share = (req, res) => {
                             message: "Book was shared successfully!",
                           });
                           // update recipient user notifications
-                          var notificationStr = ownerUserData.name + " has shared book \"" + bookData.book_title + "\" with you.";
+                          var notificationStr = ownerUserData.name + " has shared book \"" + bookData.pdfName + "\" with you.";
                           shareUserData.notifications.push(notificationStr);
                           User.findByIdAndUpdate(shareUserData._id, { $set: {notifications: shareUserData.notifications}}).catch((err) => {
                             console.log(err.message);
