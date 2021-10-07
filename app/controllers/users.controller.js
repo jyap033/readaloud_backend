@@ -85,7 +85,7 @@ exports.share = (req, res) => {
                             message: "Book was shared successfully!",
                           });
                           // update recipient user notifications
-                          var notificationStr = ownerUserData.name + " has shared book \"" + bookData.bookTitle + "\" with you.";
+                          var notificationStr = ownerUserData.name + " has shared book \"" + bookData.book_title + "\" with you.";
                           shareUserData.notifications.push(notificationStr);
                           User.findByIdAndUpdate(shareUserData._id, { $set: {notifications: shareUserData.notifications}}).catch((err) => {
                             console.log(err.message);
