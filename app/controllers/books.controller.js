@@ -24,7 +24,7 @@ exports.getAllTitles = async (req, res) => {
         for (const userbook of userbooks) {
           condition = { _id: userbook.book_id };
           await BookInfo.find(condition).then((bookInfo) => {
-            if (bookInfo.ownerUserID == userbook.userID) {
+            if (bookInfo[0].ownerUserID == userbook.user_id) {
               ownedBooks.push(bookInfo);
               console.log('Owned')
             } else {
