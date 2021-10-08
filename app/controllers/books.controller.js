@@ -25,10 +25,10 @@ exports.getAllTitles = async (req, res) => {
           condition = { _id: userbook.book_id };
           await BookInfo.find(condition).then((bookInfo) => {
             if (bookInfo[0].ownerUserID == userbook.user_id) {
-              ownedBooks.push(bookInfo);
+              ownedBooks.push(bookInfo[0]);
               console.log('Owned')
             } else {
-              sharedBooks.push(bookInfo);
+              sharedBooks.push(bookInfo[0]);
               console.log('Shared')
             }
           });
