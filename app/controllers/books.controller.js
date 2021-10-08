@@ -2,6 +2,7 @@ const db = require("../models");
 const BookInfo = db.books_info;
 const BookContent = db.books_content;
 const UserBooks = db.user_books;
+const Book = db.books_info;
 
 // Retrieve all BookTitles(Infos) owned by user from the database.
 exports.getAllTitles = async (req, res) => {
@@ -85,22 +86,22 @@ exports.findOne = (req, res) => {
 };
 
 exports.updateName = (req, res) => {
-  var condition = { user_id: req.body.user_id, book_id: req.params.id};
+  var condition = { user_id: req.body.user_id, book_id: req.params.id };
   UserBooks.find(condition).then((data) => {
     if (data) {
-      condition = {_id:data[0]._id}
-      UserBooks.findByIdAndUpdate(condition, { $set: { book_title: req.body.newBookTitle }})
-      .then((data) => {
-        res.status(200).send({ message: "Name changed sucessfully"});
-      });
+      condition = { _id: data[0]._id }
+      UserBooks.findByIdAndUpdate(condition, { $set: { book_title: req.body.newBookTitle } })
+        .then((data) => {
+          res.status(200).send({ message: "Name changed sucessfully" });
+        });
     }
     else {
       res.status(500).send({ message: "Error retrieving Book with id=" + req.params.id });
     }
   })
-  .catch((err) => {
-    res.status(500).send({ message: "Error retrieving Book with id=" + req.params.id });
-  });
+    .catch((err) => {
+      res.status(500).send({ message: "Error retrieving Book with id=" + req.params.id });
+    });
 };
 
 exports.getProgress = (req, res) => {
@@ -149,38 +150,63 @@ exports.updateProgress = (req, res) => {
 // Delete a Book with the specified id in the request
 exports.delete = (req, res) => {
   const id = req.params.id;
+  var condition = { _id: id };
 
+  // Check if the user is the owner of the book
+  Book.findOne(condition).then(bookData => {
+    if (bookData) {
+      // If owner requests delete
+      if (bookData.ownerUserID == req.query.user_id) {
+        console.log("Owner of the book is deleting the book");
+        condition = { bookID: id };
 
-  var condition = { bookID: id };
-  BookContent.deleteOne(condition).then((data) => {
-    if (!data) {
-      res.status(404).send({
-        message: `Cannot delete BookContent with id=${id}. Maybe BookContent was not found!`,
-      });
-    }
-  })
+        BookContent.deleteOne(condition).then((data) => {
+          if (!data) {
+            res.status(404).send({
+              message: `Cannot delete BookContent with id=${id}. Maybe BookContent was not found!`,
+            });
+          }
+        });
 
-  condition = { _id: id };
-  BookInfo.deleteOne(condition).then((data) => {
-    if (!data) {
-      res.status(404).send({
-        message: `Cannot delete BookInfo with id=${id}. Maybe BookInfo was not found!`,
-      });
-    }
-  })
+        condition = { _id: id };
+        BookInfo.deleteOne(condition).then((data) => {
+          if (!data) {
+            res.status(404).send({
+              message: `Cannot delete BookInfo with id=${id}. Maybe BookInfo was not found!`,
+            });
+          }
+        });
 
-  condition = { book_id: id };
-  UserBooks.deleteMany(condition).then((data) => {
-    if (!data) {
-      res.status(404).send({
-        message: `Cannot delete BookInfo with id=${id}. Maybe BookInfo was not found!`,
-      });
+        condition = { book_id: id };
+        UserBooks.deleteMany(condition).then((data) => {
+          if (!data) {
+            res.status(404).send({
+              message: `Cannot delete BookInfo with id=${id}. Maybe BookInfo was not found!`,
+            });
+          } else {
+            res.status(204).send();
+          }
+        });
+      } else { // Shared recipient requests delete
+        console.log("Shared recipient of the book is deleting the book");
+        condition = { book_id: id, user_id: req.query.user_id };
+        UserBooks.deleteOne(condition).then((data) => {
+          if (!data) {
+            res.status(404).send({
+              message: `Cannot delete BookInfo with id=${id}. Maybe BookInfo was not found!`,
+            });
+          } else {
+            res.status(204).send();
+          }
+        });
+      }
     } else {
-      res.send({
-        message: "BookContent, BookInfo, and UserBook of the Audiobook was deleted successfully!",
+      res.status(404).send({
+        message: `Book with id=${id}. not found`
       });
     }
-  })
+  });
+
 };
 
 
