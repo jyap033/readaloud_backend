@@ -29,6 +29,8 @@ exports.getAllTitles = async (req, res) => {
               'title': userbook.book_title,
               ...bookInfo[0]['_doc']
             }
+            renamed['book_id'] = renamed['_id'];
+            delete renamed['_id'];
             if (bookInfo[0].ownerUserID == userbook.user_id) {
               ownedBooks.push(renamed);
               console.log('Owned')
