@@ -11,7 +11,7 @@ exports.getAllTitles = async (req, res) => {
   // const token = req.token;
   // const userID = token["sub"];
   const userID = req.query.userid;
-  const type = req.query.type;
+  // To delete // const type = req.query.type;
   console.log("userID:  %s", userID);
   // var condition = title ? { title: { $regex: new RegExp(title), $options: "i" } } : {};
   var condition = { user_id: userID };
@@ -25,36 +25,40 @@ exports.getAllTitles = async (req, res) => {
         for (const userbook of userbooks) {
           condition = { _id: userbook.book_id };
           await BookInfo.find(condition).then((bookInfo) => {
+            let renamed = {
+              'title': userbook.book_title,
+              ...bookInfo[0]['_doc']
+            }
             if (bookInfo[0].ownerUserID == userbook.user_id) {
-              ownedBooks.push(bookInfo[0]);
+              ownedBooks.push(renamed);
               console.log('Owned')
             } else {
-              sharedBooks.push(bookInfo[0]);
+              sharedBooks.push(renamed);
               console.log('Shared')
             }
           });
         } resolve()
-
       });
 
       bar.then(() => {
         // res.send(allbooks)
-        if (!type) {
-          res.send(userbooks);
-        }
-        else if (type == "owned") {
-          console.log('send Owned')
+        // if (!type) {
+        //   res.send(userbooks);
+        // }
+        // else if (type == "owned") {
+        //   console.log('send Owned')
 
-          res.send(ownedBooks)
-        } else if (type == "shared") {
-          res.send(sharedBooks)
-          console.log('send Shared')
-        } else {
-          //bad request
-          res.status(400).send({
-            message: err.message || "Invalid type",
-          });
-        }
+        //   res.send(ownedBooks)
+        // } else if (type == "shared") {
+        //   res.send(sharedBooks)
+        //   console.log('send Shared')
+        // } else {
+        //   //bad request
+        //   res.status(400).send({
+        //     message: err.message || "Invalid type",
+        //   });
+        // }
+        res.send({ "OwnedBooks": ownedBooks, "SharedBooks": sharedBooks });
       });
 
     })
