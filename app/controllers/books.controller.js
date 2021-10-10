@@ -167,50 +167,52 @@ exports.delete = (req, res) => {
         condition = { bookID: id };
 
         BookContent.deleteOne(condition).then((data) => {
-          if (!data) {
-            res.status(404).send({
-              message: `Cannot delete BookContent with id=${id}. Maybe BookContent was not found!`,
-            });
+          if (data.n == 1) {
+            res.status(204).send();
+          } else {
+            res.status(404).send({ message: `Cannot delete BookContent with id=${id}. Book was not found!` });
           }
+        }).catch((err) => {
+          res.status(500).send({ message: `DB server internal error` });
         });
 
         condition = { _id: id };
         BookInfo.deleteOne(condition).then((data) => {
-          if (!data) {
-            res.status(404).send({
-              message: `Cannot delete BookInfo with id=${id}. Maybe BookInfo was not found!`,
-            });
+          if (data.n == 1) {
+            res.status(204).send();
+          } else {
+            res.status(404).send({ message: `Cannot delete BookInfo with id=${id}. Book was not found!` });
           }
+        }).catch((err) => {
+          res.status(500).send({ message: `DB server internal error` });
         });
 
         condition = { book_id: id };
         UserBooks.deleteMany(condition).then((data) => {
-          if (!data) {
-            res.status(404).send({
-              message: `Cannot delete BookInfo with id=${id}. Maybe BookInfo was not found!`,
-            });
-          } else {
+          if (data.n != 0) {
             res.status(204).send();
+          } else {
+            res.status(404).send({ message: `Cannot delete UserBooks with id=${id}. Book was not found!` });
           }
+        }).catch((err) => {
+          res.status(500).send({ message: `DB server internal error` });
         });
       } else { // Shared recipient requests delete
         console.log("Shared recipient of the book is deleting the book");
         condition = { book_id: id, user_id: req.query.user_id };
         UserBooks.deleteOne(condition).then((data) => {
-          if (!data) {
-            res.status(404).send({
-              message: `Cannot delete BookInfo with id=${id}. Maybe BookInfo was not found!`,
-            });
-          } else {
+          if (data.n == 1) {
             res.status(204).send();
+          } else {
+            res.status(404).send({ message: `Cannot delete BookInfo with id=${id}. Book was not found!` });
           }
+        }).catch((err) => {
+          res.status(500).send({ message: `DB server internal error` });
         });
       }
-    } else {
-      res.status(404).send({
-        message: `Book with id=${id}. not found`
-      });
     }
+  }).catch((err) => {
+    res.status(404).send({ message: `Book with id=${id}. not found` });
   });
 
 };
