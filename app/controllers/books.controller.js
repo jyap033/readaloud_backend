@@ -3,6 +3,7 @@ const BookInfo = db.books_info;
 const BookContent = db.books_content;
 const UserBooks = db.user_books;
 const Book = db.books_info;
+const User = db.users;
 
 // Retrieve all BookTitles(Infos) owned by user from the database.
 exports.getAllTitles = async (req, res) => {
@@ -157,19 +158,19 @@ exports.updateProgress = (req, res) => {
 exports.delete = (req, res) => {
   const id = req.params.id;
   var condition = { _id: id };
-
+  var ownerUserData;
   // Check if the user is the owner of the book
   Book.findOne(condition).then(bookData => {
     if (bookData) {
       // If owner requests delete
       if (bookData.ownerUserID == req.query.user_id) {
+        User.findOne({ _id: req.query.user_id }).then((data) => ownerUserData = data);
+
         console.log("Owner of the book is deleting the book");
         condition = { bookID: id };
 
         BookContent.deleteOne(condition).then((data) => {
-          if (data.n == 1) {
-            res.status(204).send();
-          } else {
+          if (data.n != 1) {
             res.status(404).send({ message: `Cannot delete BookContent with id=${id}. Book was not found!` });
           }
         }).catch((err) => {
@@ -178,9 +179,7 @@ exports.delete = (req, res) => {
 
         condition = { _id: id };
         BookInfo.deleteOne(condition).then((data) => {
-          if (data.n == 1) {
-            res.status(204).send();
-          } else {
+          if (data.n != 1) {
             res.status(404).send({ message: `Cannot delete BookInfo with id=${id}. Book was not found!` });
           }
         }).catch((err) => {
@@ -188,7 +187,26 @@ exports.delete = (req, res) => {
         });
 
         condition = { book_id: id };
+        UserBooks.find(condition)
+          .then((userbooks) => {
+            for (const userbook of userbooks) {
+              condition = { _id: userbook.user_id }
+              User.findOne(condition).then((sharedUserData) => {
+                console.log("Updating recipient user notifications...");
+                console.log(sharedUserData);
+                // update recipient user notifications
+                var notificationStr = ownerUserData.name + " has deleted the shared book \"" + bookData.pdfName + "\".";
+                sharedUserData.notifications.push(notificationStr);
+                console.log("Notifications : \n", sharedUserData.notifications);
+                User.findByIdAndUpdate(sharedUserData._id, { $set: { notifications: sharedUserData.notifications } }).catch((err) => {
+                  console.log(err.message);
+                });
+              });
+            }
+          });
+        condition = { book_id: id };
         UserBooks.deleteMany(condition).then((data) => {
+          console.log(data);
           if (data.n != 0) {
             res.status(204).send();
           } else {
