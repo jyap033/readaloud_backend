@@ -190,18 +190,20 @@ exports.delete = (req, res) => {
         UserBooks.find(condition)
           .then((userbooks) => {
             for (const userbook of userbooks) {
-              condition = { _id: userbook.user_id }
-              User.findOne(condition).then((sharedUserData) => {
-                console.log("Updating recipient user notifications...");
-                console.log(sharedUserData);
-                // update recipient user notifications
-                var notificationStr = ownerUserData.name + " has deleted the shared book \"" + bookData.pdfName + "\".";
-                sharedUserData.notifications.push(notificationStr);
-                console.log("Notifications : \n", sharedUserData.notifications);
-                User.findByIdAndUpdate(sharedUserData._id, { $set: { notifications: sharedUserData.notifications } }).catch((err) => {
-                  console.log(err.message);
+              if (userbook.user_id != req.query.user_id) {
+                condition = { _id: userbook.user_id }
+                User.findOne(condition).then((sharedUserData) => {
+                  console.log("Updating recipient user notifications...");
+                  console.log(sharedUserData);
+                  // update recipient user notifications
+                  var notificationStr = ownerUserData.name + " has deleted the shared book \"" + bookData.pdfName + "\".";
+                  sharedUserData.notifications.push(notificationStr);
+                  console.log("Notifications : \n", sharedUserData.notifications);
+                  User.findByIdAndUpdate(sharedUserData._id, { $set: { notifications: sharedUserData.notifications } }).catch((err) => {
+                    console.log(err.message);
+                  });
                 });
-              });
+              }
             }
           });
         condition = { book_id: id };
