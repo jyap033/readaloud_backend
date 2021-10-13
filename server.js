@@ -21,7 +21,6 @@ app.use(bodyParser.json());
 // parse requests of content-type - application/x-www-form-urlencoded
 app.use(bodyParser.urlencoded({ extended: true }));
 
-require("./app/routes/notes.routes")(app);
 require("./app/routes/books.routes")(app);
 require("./app/routes/upload.routes")(app);
 require("./app/routes/users.routes")(app);
