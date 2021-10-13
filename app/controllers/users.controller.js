@@ -11,16 +11,16 @@ exports.login = (req, res) => {
     res.status(400).send({ message: "Content1 can not be empty!" });
     return;
   }
-
+  // check if user already exists in database
   var condition = { _id: req.body.id };
   User.findOne(condition).then(data => {
-    if (data) {
+    if (data) { // user already exists, retrieve notifications and clear them from database
       res.status(200).send({ "notifications": data.notifications });
       User.findByIdAndUpdate(condition, { $set: { notifications: [] } }).catch((err) => {
         console.log(err.message);
       });
     }
-    else {
+    else { // user does not exist, add the user into the database
       // Create a User
       const newUser = new User({
         _id: req.body.id,
@@ -69,6 +69,7 @@ exports.share = (req, res) => {
               // recipient user exists
               condition = { user_id: shareUserData._id, book_id: bookData._id };
               User_Book.findOne(condition).then(existsCheck => {
+
                 if (!existsCheck) {
                   // book has not been shared previously
                   const newUserBook = new User_Book({
@@ -94,30 +95,33 @@ exports.share = (req, res) => {
                       });
                     })
                 }
-                else {
+                else { // user_book for book and user already exists
                   res.status(404).send({
                     message:
                       "Book already shared with recipient user"
                   });
                 }
+
               });
 
             }
-            else { // user to share to does not exist
+            else { // receipient does not exist
               res.status(404).send({
                 message:
-                  "Recipient user not found."
+                  "Receipient user not found."
               });
             }
+
           });
         }
+
         else { // user is not owner of book
           res.status(401).send({
             message:
               "User is not owner of selected book."
           });
         }
-      }).catch((err) => {
+      }).catch((err) => { // book does not exist
         res.status(404).send({
           message:
             "Book not found."
@@ -131,7 +135,7 @@ exports.share = (req, res) => {
       });
     }
   })
-    .catch((err) => {
+    .catch((err) => { // catch any general errors to fail gracefully
       console.log(err.message);
       res.status(500).send({
         message: "Book sharing failed",
@@ -140,30 +144,24 @@ exports.share = (req, res) => {
 }
 exports.addBookmark = (req, res) => {
   condition = { user_id: req.body.user_id, book_id: mongoose.Types.ObjectId(req.body.book_id) };
-  User_Book.findOne(condition).then(bookData => {
-    if (!bookData) {
+  User_Book.findOne(condition).then(bookData => { // seach for user_book to add bookmark into
+    if (!bookData) { // if-guard to ensure corresponding user_book is found
       res.status(404).send({
         message: "User_Book not found",
       });
       return;
     }
-    /*bookData.bookmarks.forEach(bkmark => {
-      if (bkmark.name == req.body.name){
-        res.status(409).send({
-          message: "Bookmark with same name already exists",
-        });
-        return;
-      }
-    });*/
-    var newBookmark = {
+    // corresponding user_book exists
+    var newBookmark = { // create bookmark object with given parameters
       "name": req.body.name,
       "page": req.body.page
     }
-    bookData.bookmarks.push(newBookmark);
-    User_Book.findByIdAndUpdate(bookData._id, { $set: { bookmarks: bookData.bookmarks } }).catch((err) => {
-      console.log(err.message);
+    bookData.bookmarks.push(newBookmark); // add new bookmark to copy of existing bookmark array
+    User_Book.findByIdAndUpdate(bookData._id, { $set: { bookmarks: bookData.bookmarks } }) // update database with new bookmark array
+    .catch((err) => { 
+      console.log(err.message); // would not happen, since we directly use the _id from the found user_book. Placed here for safety and debugging
     });
-    res.status(201).send({
+    res.status(201).send({ // Send success response
       bookmarks: bookData.bookmarks
     });
   })
@@ -177,11 +175,11 @@ exports.addBookmark = (req, res) => {
 
 exports.removeBookmark = (req, res) => {
   condition = { user_id: req.body.user_id, book_id: req.body.book_id };
-  User_Book.findOne(condition).then(bookData => {
-    const indx = bookData.bookmarks.findIndex(v => v._id.toString() === req.body.bookmark_id);
+  User_Book.findOne(condition).then(bookData => { // search user_books for a corresponding entry
+    const indx = bookData.bookmarks.findIndex(v => v._id.toString() === req.body.bookmark_id); // search array for index of bookmarkID to remove
     console.log(indx);
     if (indx != -1) {
-      // bookmark with matching name found
+      // bookmark with matching id found
       bookData.bookmarks.splice(indx, 1);
       User_Book.findByIdAndUpdate(bookData._id, { $set: { bookmarks: bookData.bookmarks } }).catch((err) => {
         console.log(err.message);
@@ -191,6 +189,7 @@ exports.removeBookmark = (req, res) => {
       });
       return;
     }
+    // bookmark with matching id not found
     res.status(404).send({
       message: "Bookmark not found",
     });

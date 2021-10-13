@@ -6,7 +6,6 @@ module.exports = (mongoose) => {
         ownerUserID: String,
         pdfName: String,
         author: String,
-        // page: [Page]
       },
       { timestamps: true }
     )
@@ -14,23 +13,3 @@ module.exports = (mongoose) => {
 
   return BookInfo;
 };
-// };module.exports = mongoose => {
-//   const Book = mongoose.model(
-//     "Book",
-//     mongoose.Schema(
-//       {
-//         userID: String,
-//         bookTitle: String,
-//         author: String,
-//         chapters: [{
-//           type: mongoose.Schema.Types.ObjectId,
-//           required: true,
-//           ref: 'Chapter'
-//         }]
-//       },
-//       { timestamps: true }
-//     )
-//   );
-
-//   return Book;
-// };
