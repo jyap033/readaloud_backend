@@ -21,12 +21,11 @@ exports.upload = async (req, res) => {
       fileName = req.file.originalname ?? "test";
       bookTitle = req.body.bookTitle ?? fileName;
       var filepath = path.join(path.join(__dirname, "../../"), req.file.path);
-      console.log(filepath);
       var stream = fs.readFileSync(filepath);
       var extracted_text = await getPDFText(stream);
       let re = /\r\n----------------Page.*Break----------------\r\n/g;
       var textArr = extracted_text.split(re);
-      fs.unlink(filepath, () => {});
+      fs.unlink(filepath, () => { });
     } else {
       console.log("req.file == null");
       res.status(404).json({ errors });
@@ -51,7 +50,6 @@ exports.upload = async (req, res) => {
     page_number++;
     pageArr.push(page);
   });
-  console.log("Book Created.");
 
   const bookID = new mongoose.Types.ObjectId();
 

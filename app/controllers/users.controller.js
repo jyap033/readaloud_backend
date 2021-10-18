@@ -162,9 +162,9 @@ exports.addBookmark = (req, res) => {
     }
     bookData.bookmarks.push(newBookmark); // add new bookmark to copy of existing bookmark array
     User_Book.findByIdAndUpdate(bookData._id, { $set: { bookmarks: bookData.bookmarks } }) // update database with new bookmark array
-    .catch((err) => { 
-      console.log(err.message); // would not happen, since we directly use the _id from the found user_book. Placed here for safety and debugging
-    });
+      .catch((err) => {
+        console.log(err.message); // would not happen, since we directly use the _id from the found user_book. Placed here for safety and debugging
+      });
     res.status(201).send({ // Send success response
       bookmarks: bookData.bookmarks
     });
@@ -182,7 +182,7 @@ exports.removeBookmark = (req, res) => {
   condition = { user_id: req.body.user_id, book_id: req.body.book_id };
   User_Book.findOne(condition).then(bookData => { // search user_books for a corresponding entry
     const indx = bookData.bookmarks.findIndex(v => v._id.toString() === req.body.bookmark_id); // search array for index of bookmarkID to remove
-    console.log(indx);
+
     if (indx != -1) {
       // bookmark with matching id found
       bookData.bookmarks.splice(indx, 1);

@@ -10,10 +10,6 @@ exports.getAllTitles = async (req, res) => {
   var sharedBooks = [];
   var ownedBooks = [];
   const userID = req.query.userid;
-<<<<<<< HEAD
-=======
-  console.log("userID:  %s", userID);
->>>>>>> e6c9c182a143cef97d61a38cad94c90b3276886b
   var condition = { user_id: userID };
 
   // Retrieve all audiobooks accesible by the user, be it uploaded or shared
@@ -34,10 +30,8 @@ exports.getAllTitles = async (req, res) => {
             //Push Userbook to shared/owned array
             if (bookInfo[0].ownerUserID == userbook.user_id) {
               ownedBooks.push(renamed);
-              console.log('Owned')
             } else {
               sharedBooks.push(renamed);
-              console.log('Shared')
             }
           });
         } resolve()
@@ -60,7 +54,6 @@ exports.getAllTitles = async (req, res) => {
 // Find a specified Book and its contents
 exports.findOne = (req, res) => {
   const id = req.params.id;
-  console.log(id)
   var condition = { bookID: id };
 
   BookContent.find(condition)
@@ -74,11 +67,7 @@ exports.findOne = (req, res) => {
     });
 };
 
-<<<<<<< HEAD
-// Update the name of the audiobook w/o changing the file name
-=======
 // Update the name of the specified Book
->>>>>>> e6c9c182a143cef97d61a38cad94c90b3276886b
 exports.updateName = (req, res) => {
   var condition = { user_id: req.body.user_id, book_id: req.params.id };
   UserBooks.find(condition).then((data) => {
@@ -98,17 +87,11 @@ exports.updateName = (req, res) => {
     });
 };
 
-<<<<<<< HEAD
-// Get the progress of the audiobook of the user
-=======
 //Get the progress of the specifed user and book.
->>>>>>> e6c9c182a143cef97d61a38cad94c90b3276886b
 exports.getProgress = (req, res) => {
   const bookID = req.params.id;
   const userID = req.query.userid;
 
-  console.log(bookID);
-  console.log(userID);
   var condition = { book_id: bookID, user_id: userID };
 
   UserBooks.findOne(condition)
@@ -122,22 +105,16 @@ exports.getProgress = (req, res) => {
     });
 };
 
-<<<<<<< HEAD
-// Update the progress of the user on that particular book
-=======
 //Update the progress of the specifed user and book.
->>>>>>> e6c9c182a143cef97d61a38cad94c90b3276886b
 exports.updateProgress = (req, res) => {
   const bookID = req.params.id;
   const userID = req.query.userid;
   const newPage = req.body.current_page;
   const newSentence = req.body.current_sentence;
-  console.log(newPage);
   var condition = { book_id: bookID, user_id: userID };
 
   UserBooks.updateOne(condition, { $set: { currentPage: newPage, currentSentence: newSentence } })
     .then((data) => {
-      console.log("DEBUG LOG: UPDATE PROGRESS", data);
       if (!data)
         res.status(404).send({ message: "UserBooks Not found" })
       else res.send(data);
@@ -160,7 +137,6 @@ exports.delete = (req, res) => {
       if (bookData.ownerUserID == req.query.user_id) {
         User.findOne({ _id: req.query.user_id }).then((data) => ownerUserData = data);
 
-        console.log("Owner of the book is deleting the book");
         condition = { bookID: id };
 
         // Delete from BookContent Entity
@@ -190,12 +166,10 @@ exports.delete = (req, res) => {
               if (userbook.user_id != req.query.user_id) {
                 condition = { _id: userbook.user_id }
                 User.findOne(condition).then((sharedUserData) => {
-                  console.log("Updating recipient user notifications...");
-                  console.log(sharedUserData);
                   // update recipient user notifications
                   var notificationStr = ownerUserData.name + " has deleted the shared book \"" + bookData.pdfName + "\".";
                   sharedUserData.notifications.push(notificationStr);
-                  console.log("Notifications : \n", sharedUserData.notifications);
+
                   User.findByIdAndUpdate(sharedUserData._id, { $set: { notifications: sharedUserData.notifications } }).catch((err) => {
                     console.log(err.message);
                   });
@@ -206,7 +180,6 @@ exports.delete = (req, res) => {
         // Delete from UserBooks (Recipients can no longer access the book)
         condition = { book_id: id };
         UserBooks.deleteMany(condition).then((data) => {
-          console.log(data);
           if (data.n != 0) {
             res.status(204).send();
           } else {
