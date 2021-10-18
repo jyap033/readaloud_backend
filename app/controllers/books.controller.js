@@ -5,11 +5,15 @@ const UserBooks = db.user_books;
 const Book = db.books_info;
 const User = db.users;
 
-// Retrieve all BookTitles(Infos) owned by user from the database.
+// Retrieve all BookTitles(Infos) owned by & shared to the user.
 exports.getAllTitles = async (req, res) => {
   var sharedBooks = [];
   var ownedBooks = [];
   const userID = req.query.userid;
+<<<<<<< HEAD
+=======
+  console.log("userID:  %s", userID);
+>>>>>>> e6c9c182a143cef97d61a38cad94c90b3276886b
   var condition = { user_id: userID };
 
   // Retrieve all audiobooks accesible by the user, be it uploaded or shared
@@ -26,6 +30,8 @@ exports.getAllTitles = async (req, res) => {
             }
             renamed['book_id'] = renamed['_id'];
             delete renamed['_id'];
+
+            //Push Userbook to shared/owned array
             if (bookInfo[0].ownerUserID == userbook.user_id) {
               ownedBooks.push(renamed);
               console.log('Owned')
@@ -51,8 +57,7 @@ exports.getAllTitles = async (req, res) => {
 
 };
 
-
-// Find a single Book with an id
+// Find a specified Book and its contents
 exports.findOne = (req, res) => {
   const id = req.params.id;
   console.log(id)
@@ -69,7 +74,11 @@ exports.findOne = (req, res) => {
     });
 };
 
+<<<<<<< HEAD
 // Update the name of the audiobook w/o changing the file name
+=======
+// Update the name of the specified Book
+>>>>>>> e6c9c182a143cef97d61a38cad94c90b3276886b
 exports.updateName = (req, res) => {
   var condition = { user_id: req.body.user_id, book_id: req.params.id };
   UserBooks.find(condition).then((data) => {
@@ -89,7 +98,11 @@ exports.updateName = (req, res) => {
     });
 };
 
+<<<<<<< HEAD
 // Get the progress of the audiobook of the user
+=======
+//Get the progress of the specifed user and book.
+>>>>>>> e6c9c182a143cef97d61a38cad94c90b3276886b
 exports.getProgress = (req, res) => {
   const bookID = req.params.id;
   const userID = req.query.userid;
@@ -109,7 +122,11 @@ exports.getProgress = (req, res) => {
     });
 };
 
+<<<<<<< HEAD
 // Update the progress of the user on that particular book
+=======
+//Update the progress of the specifed user and book.
+>>>>>>> e6c9c182a143cef97d61a38cad94c90b3276886b
 exports.updateProgress = (req, res) => {
   const bookID = req.params.id;
   const userID = req.query.userid;

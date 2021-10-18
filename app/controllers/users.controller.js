@@ -4,6 +4,7 @@ const User = db.users;
 const User_Book = db.user_books;
 const Book = db.books_info;
 
+//Login and gain access to the application.
 exports.login = (req, res) => {
 
   // Validate request
@@ -54,6 +55,7 @@ exports.login = (req, res) => {
     });
 };
 
+//Share an Audiobook with another user.
 exports.share = (req, res) => {
   var condition = { _id: req.body.user_id };
   User.findOne(condition).then(ownerUserData => {
@@ -142,6 +144,8 @@ exports.share = (req, res) => {
       });
     });
 }
+
+//Add a bookmark to the specifc Audiobook.
 exports.addBookmark = (req, res) => {
   condition = { user_id: req.body.user_id, book_id: mongoose.Types.ObjectId(req.body.book_id) };
   User_Book.findOne(condition).then(bookData => { // seach for user_book to add bookmark into
@@ -173,6 +177,7 @@ exports.addBookmark = (req, res) => {
     });
 }
 
+//Remove a bookmark from a specific Audiobook.
 exports.removeBookmark = (req, res) => {
   condition = { user_id: req.body.user_id, book_id: req.body.book_id };
   User_Book.findOne(condition).then(bookData => { // search user_books for a corresponding entry

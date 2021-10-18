@@ -10,6 +10,7 @@ const BookInfo = db.books_info;
 const BookContent = db.books_content;
 const UserBooks = db.user_books;
 
+//Convert Uploaded PDF file to text and save into database.
 exports.upload = async (req, res) => {
   const userID = req.body.id;
   var fileName = "";
@@ -41,22 +42,14 @@ exports.upload = async (req, res) => {
   var page_number = 1;
 
   textArr.forEach(function (entry) {
-    // console.log(entry);
-    // console.log(
-    //   "\n\n================PageBreak" + page_number + "==================="
-    // );
-    // const pageID = new mongoose.Types.ObjectId();
-    // pageIDArr.push(pageID);
     entry = entry.replace(/\r\n/g, " ");
     const page = new Page({
       page_number: page_number,
       chapterNumber: 1,
-      // chapterBookID: Number,
       body: entry,
     });
     page_number++;
     pageArr.push(page);
-    // page.save();
   });
   console.log("Book Created.");
 
@@ -98,7 +91,6 @@ exports.upload = async (req, res) => {
   bookInfo
     .save(bookInfo)
     .then((data) => {
-      //   res.status(201).json({ title: data, text: textArr });
       res.send(data);
     })
     .catch((err) => {
@@ -108,6 +100,7 @@ exports.upload = async (req, res) => {
     });
 };
 
+//Function to retrieve PDf file from API call.
 function getPDFText(data) {
   try {
     return new Promise((resolve, reject) => {

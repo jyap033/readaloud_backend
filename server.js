@@ -1,11 +1,6 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const cors = require("cors");
-const { OAuth2Client } = require("google-auth-library");
-// const client = new OAuth2Client(CLIENT_ID);
-
-
-
 
 const app = express();
 require("dotenv").config();
@@ -42,13 +37,10 @@ db.mongoose
   });
 
 if (process.env.NODE_ENV === "production") {
-  // app.use(express.static('./client/build'))
   app.use(express.static("./client/build"));
 }
 
-// verify().catch(console.error);
-
-// simple route
+// simple route for testing
 app.get("/", (req, res) => {
   res.json({ message: "Welcome to jay's application." });
 });
