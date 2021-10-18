@@ -5,22 +5,16 @@ const UserBooks = db.user_books;
 const Book = db.books_info;
 const User = db.users;
 
-// Retrieve all BookTitles(Infos) owned by user from the database.
+// Retrieve all BookTitles(Infos) owned by & shared to the user.
 exports.getAllTitles = async (req, res) => {
   var sharedBooks = [];
   var ownedBooks = [];
-  // const token = req.token;
-  // const userID = token["sub"];
   const userID = req.query.userid;
-  // To delete // const type = req.query.type;
   console.log("userID:  %s", userID);
-  // var condition = title ? { title: { $regex: new RegExp(title), $options: "i" } } : {};
   var condition = { user_id: userID };
 
   await UserBooks.find(condition)
     .then((userbooks) => {
-
-
       var bar = new Promise(async (resolve) => {
 
         for (const userbook of userbooks) {
@@ -32,6 +26,8 @@ exports.getAllTitles = async (req, res) => {
             }
             renamed['book_id'] = renamed['_id'];
             delete renamed['_id'];
+
+            //Push Userbook to shared/owned array
             if (bookInfo[0].ownerUserID == userbook.user_id) {
               ownedBooks.push(renamed);
               console.log('Owned')
@@ -57,8 +53,7 @@ exports.getAllTitles = async (req, res) => {
 
 };
 
-
-// Find a single Book with an id
+// Find a specified Book and its contents
 exports.findOne = (req, res) => {
   const id = req.params.id;
   console.log(id)
@@ -75,6 +70,7 @@ exports.findOne = (req, res) => {
     });
 };
 
+// Update the name of the specified Book
 exports.updateName = (req, res) => {
   var condition = { user_id: req.body.user_id, book_id: req.params.id };
   UserBooks.find(condition).then((data) => {
@@ -94,6 +90,7 @@ exports.updateName = (req, res) => {
     });
 };
 
+//Get the progress of the specifed user and book.
 exports.getProgress = (req, res) => {
   const bookID = req.params.id;
   const userID = req.query.userid;
@@ -113,7 +110,7 @@ exports.getProgress = (req, res) => {
     });
 };
 
-
+//Update the progress of the specifed user and book.
 exports.updateProgress = (req, res) => {
   const bookID = req.params.id;
   const userID = req.query.userid;
@@ -121,8 +118,6 @@ exports.updateProgress = (req, res) => {
   const newSentence = req.body.current_sentence;
   console.log(newPage);
   var condition = { book_id: bookID, user_id: userID };
-
-  // MyModel.updateMany({}, { $set: { name: 'foo' } });
 
   UserBooks.updateOne(condition, { $set: { currentPage: newPage, currentSentence: newSentence } })
     .then((data) => {
