@@ -9,18 +9,12 @@ const User = db.users;
 exports.getAllTitles = async (req, res) => {
   var sharedBooks = [];
   var ownedBooks = [];
-  // const token = req.token;
-  // const userID = token["sub"];
   const userID = req.query.userid;
-  // To delete // const type = req.query.type;
-  console.log("userID:  %s", userID);
-  // var condition = title ? { title: { $regex: new RegExp(title), $options: "i" } } : {};
   var condition = { user_id: userID };
 
+  // Retrieve all audiobooks accesible by the user, be it uploaded or shared
   await UserBooks.find(condition)
     .then((userbooks) => {
-
-
       var bar = new Promise(async (resolve) => {
 
         for (const userbook of userbooks) {
@@ -75,6 +69,7 @@ exports.findOne = (req, res) => {
     });
 };
 
+// Update the name of the audiobook w/o changing the file name
 exports.updateName = (req, res) => {
   var condition = { user_id: req.body.user_id, book_id: req.params.id };
   UserBooks.find(condition).then((data) => {
@@ -94,6 +89,7 @@ exports.updateName = (req, res) => {
     });
 };
 
+// Get the progress of the audiobook of the user
 exports.getProgress = (req, res) => {
   const bookID = req.params.id;
   const userID = req.query.userid;
@@ -113,7 +109,7 @@ exports.getProgress = (req, res) => {
     });
 };
 
-
+// Update the progress of the user on that particular book
 exports.updateProgress = (req, res) => {
   const bookID = req.params.id;
   const userID = req.query.userid;
@@ -121,8 +117,6 @@ exports.updateProgress = (req, res) => {
   const newSentence = req.body.current_sentence;
   console.log(newPage);
   var condition = { book_id: bookID, user_id: userID };
-
-  // MyModel.updateMany({}, { $set: { name: 'foo' } });
 
   UserBooks.updateOne(condition, { $set: { currentPage: newPage, currentSentence: newSentence } })
     .then((data) => {
@@ -152,6 +146,7 @@ exports.delete = (req, res) => {
         console.log("Owner of the book is deleting the book");
         condition = { bookID: id };
 
+        // Delete from BookContent Entity
         BookContent.deleteOne(condition).then((data) => {
           if (data.n != 1) {
             res.status(404).send({ message: `Cannot delete BookContent with id=${id}. Book was not found!` });
@@ -160,6 +155,7 @@ exports.delete = (req, res) => {
           res.status(500).send({ message: `DB server internal error` });
         });
 
+        // Delete from BookInfo Entity
         condition = { _id: id };
         BookInfo.deleteOne(condition).then((data) => {
           if (data.n != 1) {
@@ -169,6 +165,7 @@ exports.delete = (req, res) => {
           res.status(500).send({ message: `DB server internal error` });
         });
 
+        // Add notifications to those recipients who were shared by the owner that the book has been deleted
         condition = { book_id: id };
         UserBooks.find(condition)
           .then((userbooks) => {
@@ -189,6 +186,7 @@ exports.delete = (req, res) => {
               }
             }
           });
+        // Delete from UserBooks (Recipients can no longer access the book)
         condition = { book_id: id };
         UserBooks.deleteMany(condition).then((data) => {
           console.log(data);
@@ -200,14 +198,14 @@ exports.delete = (req, res) => {
         }).catch((err) => {
           res.status(500).send({ message: `DB server internal error` });
         });
-      } else { // Shared recipient requests delete
-        console.log("Shared recipient of the book is deleting the book");
+      } else {
+        // If the recipient of the book requests delete
         condition = { book_id: id, user_id: req.query.user_id };
         UserBooks.deleteOne(condition).then((data) => {
           if (data.n == 1) {
             res.status(204).send();
           } else {
-            res.status(404).send({ message: `Cannot delete BookInfo with id=${id}. Book was not found!` });
+            res.status(404).send({ message: `Cannot delete UserBooks with id=${id}. Book was not found!` });
           }
         }).catch((err) => {
           res.status(500).send({ message: `DB server internal error` });
