@@ -8,3 +8,14 @@ HTTP requests can be sent to the server based on the API specified in the [Inter
 Testing of the API is documented in the Test Case Document.
 
 Some sample data is located on the second tab of the document, if you wish to send your own HTTP requests.
+
+# Project Structure
+`server.js` is the entry point of the application
+
+`app/config` contains the database url to be used with the application
+
+`app/routes` contains files which define the endpoints of the API, encapsulated by area of concern
+
+`app/models` contains the files which define database schemas for the "tables" within the MongoDB database, encapsulated by area of concern
+
+`app/controllers` contains the files which define the business logic of the application, in the form of functions to be executed when the corresponding endpoint receives a request. Also encapsulated by area of concern.
